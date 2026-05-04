@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useLogin, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { setToken } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,18 +24,18 @@ export default function Login() {
       { data: { email, password } },
       {
         onSuccess: (data) => {
-          localStorage.setItem("auth_token", data.token);
-          queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+          queryClient.setQueryData(getGetMeQueryKey(), data.user);
+          setToken(data.token);
           toast({ title: "Welcome back", description: "You have successfully logged in." });
-          setLocation("/dashboard");
+          setLocation(data.user.role === "admin" ? "/admin" : "/dashboard");
         },
-        onError: (err) => {
-          toast({ 
-            title: "Login failed", 
-            description: err.message || "Invalid credentials", 
-            variant: "destructive" 
+        onError: (err: any) => {
+          toast({
+            title: "Login failed",
+            description: err?.data?.message || err.message || "Invalid credentials",
+            variant: "destructive",
           });
-        }
+        },
       }
     );
   };
@@ -47,7 +48,7 @@ export default function Login() {
         </div>
         <span>ManagePro</span>
       </Link>
-      
+
       <Card className="w-full max-w-md shadow-lg border-muted">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl tracking-tight">Sign in</CardTitle>
@@ -57,30 +58,26 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="m@example.com" 
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required 
+                required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
+              <Input
+                id="password"
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required 
+                required
               />
             </div>
-            <Button 
-              type="submit" 
-              className="w-full mt-6" 
-              disabled={loginMutation.isPending}
-            >
+            <Button type="submit" className="w-full mt-6" disabled={loginMutation.isPending}>
               {loginMutation.isPending ? "Signing in..." : "Sign in"}
             </Button>
           </form>

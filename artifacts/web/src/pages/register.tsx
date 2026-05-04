@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useRegister, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { setToken } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,18 +25,18 @@ export default function Register() {
       { data: { fullName, email, password } },
       {
         onSuccess: (data) => {
-          localStorage.setItem("auth_token", data.token);
-          queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+          queryClient.setQueryData(getGetMeQueryKey(), data.user);
+          setToken(data.token);
           toast({ title: "Account created", description: "Welcome to ManagePro." });
           setLocation("/dashboard");
         },
-        onError: (err) => {
-          toast({ 
-            title: "Registration failed", 
-            description: err.message || "An error occurred", 
-            variant: "destructive" 
+        onError: (err: any) => {
+          toast({
+            title: "Registration failed",
+            description: err?.data?.message || err.message || "An error occurred",
+            variant: "destructive",
           });
-        }
+        },
       }
     );
   };
@@ -48,7 +49,7 @@ export default function Register() {
         </div>
         <span>ManagePro</span>
       </Link>
-      
+
       <Card className="w-full max-w-md shadow-lg border-muted">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl tracking-tight">Create an account</CardTitle>
@@ -58,42 +59,38 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="fullName">Full Name</Label>
-              <Input 
-                id="fullName" 
-                placeholder="John Doe" 
+              <Input
+                id="fullName"
+                placeholder="John Doe"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                required 
+                required
                 minLength={2}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="m@example.com" 
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required 
+                required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
+              <Input
+                id="password"
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required 
+                required
                 minLength={8}
               />
             </div>
-            <Button 
-              type="submit" 
-              className="w-full mt-6" 
-              disabled={registerMutation.isPending}
-            >
+            <Button type="submit" className="w-full mt-6" disabled={registerMutation.isPending}>
               {registerMutation.isPending ? "Creating account..." : "Register"}
             </Button>
           </form>
