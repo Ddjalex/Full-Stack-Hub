@@ -5,7 +5,7 @@ import { useLogout, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, ShieldAlert, Settings } from "lucide-react";
+import { LogOut, LayoutDashboard, ShieldAlert, Settings, Users } from "lucide-react";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const [location, setLocation] = useLocation();
@@ -54,6 +54,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             {user && (
               <nav className="flex items-center space-x-4">
                 {navLink("/dashboard", "Dashboard", LayoutDashboard)}
+                {user.role === "admin" && navLink("/leads", "Leads", Users)}
                 {user.role === "admin" && navLink("/admin", "Admin", ShieldAlert)}
                 {navLink("/settings", "Settings", Settings)}
               </nav>
@@ -66,7 +67,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <span className="font-medium text-foreground truncate max-w-[140px]">{user.fullName}</span>
                 <span className="text-xs text-muted-foreground bg-muted rounded-full px-1.5 py-0.5">{user.role}</span>
               </div>
-              <Button variant="ghost" size="sm" onClick={handleLogout} disabled={logout.isPending} data-testid="button-logout">
+              <Button variant="ghost" size="sm" onClick={handleLogout} disabled={logout.isPending}>
                 <LogOut className="h-4 w-4 mr-1.5" />
                 Logout
               </Button>

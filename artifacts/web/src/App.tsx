@@ -11,6 +11,7 @@ import Dashboard from "@/pages/dashboard";
 import Admin from "@/pages/admin";
 import Unauthorized from "@/pages/unauthorized";
 import Settings from "@/pages/settings";
+import Leads from "@/pages/leads";
 import Layout from "@/components/layout";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,13 @@ function Router() {
         {() => (
           <Layout>
             <ProtectedRoute component={Settings} />
+          </Layout>
+        )}
+      </Route>
+      <Route path="/leads">
+        {() => (
+          <Layout>
+            <ProtectedRoute component={Leads} adminOnly={true} />
           </Layout>
         )}
       </Route>

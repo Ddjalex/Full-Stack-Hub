@@ -163,3 +163,86 @@ export const DeleteUserParams = zod.object({
 export const DeleteUserResponse = zod.object({
   message: zod.string(),
 });
+
+/**
+ * @summary Create a new lead (from Zapier or webhook)
+ */
+
+export const CreateLeadBody = zod.object({
+  facebookLeadId: zod.string().optional(),
+  fullName: zod.string().min(1),
+  phone: zod.string().optional(),
+  email: zod.string().email().optional(),
+  source: zod.string().optional(),
+  campaignName: zod.string().optional(),
+  adName: zod.string().optional(),
+});
+
+/**
+ * @summary List all leads (admin only)
+ */
+export const GetLeadsQueryParams = zod.object({
+  search: zod.coerce
+    .string()
+    .optional()
+    .describe("Search by name, email, or phone"),
+  status: zod
+    .enum(["CREATED", "QUALIFIED", "CLOSED", "REJECTED"])
+    .optional()
+    .describe("Filter by status"),
+});
+
+export const GetLeadsResponse = zod.object({
+  leads: zod.array(
+    zod.object({
+      id: zod.number(),
+      facebookLeadId: zod.string().nullish(),
+      fullName: zod.string(),
+      phone: zod.string().nullish(),
+      email: zod.string().nullish(),
+      source: zod.string().nullish(),
+      campaignName: zod.string().nullish(),
+      adName: zod.string().nullish(),
+      status: zod.enum(["CREATED", "QUALIFIED", "CLOSED", "REJECTED"]),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  total: zod.number(),
+});
+
+/**
+ * @summary Get lead statistics (admin only)
+ */
+export const GetLeadStatsResponse = zod.object({
+  total: zod.number(),
+  created: zod.number(),
+  qualified: zod.number(),
+  closed: zod.number(),
+  rejected: zod.number(),
+});
+
+/**
+ * @summary Update a lead status (admin only)
+ */
+export const UpdateLeadStatusParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateLeadStatusBody = zod.object({
+  status: zod.enum(["CREATED", "QUALIFIED", "CLOSED", "REJECTED"]),
+});
+
+export const UpdateLeadStatusResponse = zod.object({
+  id: zod.number(),
+  facebookLeadId: zod.string().nullish(),
+  fullName: zod.string(),
+  phone: zod.string().nullish(),
+  email: zod.string().nullish(),
+  source: zod.string().nullish(),
+  campaignName: zod.string().nullish(),
+  adName: zod.string().nullish(),
+  status: zod.enum(["CREATED", "QUALIFIED", "CLOSED", "REJECTED"]),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});

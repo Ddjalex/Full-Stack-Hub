@@ -84,6 +84,67 @@ export interface ErrorResponse {
   error: string;
 }
 
+export type LeadStatus = (typeof LeadStatus)[keyof typeof LeadStatus];
+
+export const LeadStatus = {
+  CREATED: "CREATED",
+  QUALIFIED: "QUALIFIED",
+  CLOSED: "CLOSED",
+  REJECTED: "REJECTED",
+} as const;
+
+export interface Lead {
+  id: number;
+  facebookLeadId?: string | null;
+  fullName: string;
+  phone?: string | null;
+  email?: string | null;
+  source?: string | null;
+  campaignName?: string | null;
+  adName?: string | null;
+  status: LeadStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateLeadBody {
+  facebookLeadId?: string;
+  /** @minLength 1 */
+  fullName: string;
+  phone?: string;
+  email?: string;
+  source?: string;
+  campaignName?: string;
+  adName?: string;
+}
+
+export type UpdateLeadStatusBodyStatus =
+  (typeof UpdateLeadStatusBodyStatus)[keyof typeof UpdateLeadStatusBodyStatus];
+
+export const UpdateLeadStatusBodyStatus = {
+  CREATED: "CREATED",
+  QUALIFIED: "QUALIFIED",
+  CLOSED: "CLOSED",
+  REJECTED: "REJECTED",
+} as const;
+
+export interface UpdateLeadStatusBody {
+  status: UpdateLeadStatusBodyStatus;
+}
+
+export interface LeadsListResponse {
+  leads: Lead[];
+  total: number;
+}
+
+export interface LeadStats {
+  total: number;
+  created: number;
+  qualified: number;
+  closed: number;
+  rejected: number;
+}
+
 export type ListUsersParams = {
   /**
    * Search by name or email
@@ -100,4 +161,25 @@ export type ListUsersRole = (typeof ListUsersRole)[keyof typeof ListUsersRole];
 export const ListUsersRole = {
   user: "user",
   admin: "admin",
+} as const;
+
+export type GetLeadsParams = {
+  /**
+   * Search by name, email, or phone
+   */
+  search?: string;
+  /**
+   * Filter by status
+   */
+  status?: GetLeadsStatus;
+};
+
+export type GetLeadsStatus =
+  (typeof GetLeadsStatus)[keyof typeof GetLeadsStatus];
+
+export const GetLeadsStatus = {
+  CREATED: "CREATED",
+  QUALIFIED: "QUALIFIED",
+  CLOSED: "CLOSED",
+  REJECTED: "REJECTED",
 } as const;

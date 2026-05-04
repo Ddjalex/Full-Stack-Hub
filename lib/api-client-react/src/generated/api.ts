@@ -18,12 +18,18 @@ import type {
 
 import type {
   AuthResponse,
+  CreateLeadBody,
   ErrorResponse,
+  GetLeadsParams,
   HealthStatus,
+  Lead,
+  LeadStats,
+  LeadsListResponse,
   ListUsersParams,
   LoginBody,
   MessageResponse,
   RegisterBody,
+  UpdateLeadStatusBody,
   UpdateProfileBody,
   UpdateUserBody,
   User,
@@ -933,4 +939,346 @@ export const useDeleteUser = <
   TContext
 > => {
   return useMutation(getDeleteUserMutationOptions(options));
+};
+
+/**
+ * @summary Create a new lead (from Zapier or webhook)
+ */
+export const getCreateLeadUrl = () => {
+  return `/api/leads`;
+};
+
+export const createLead = async (
+  createLeadBody: CreateLeadBody,
+  options?: RequestInit,
+): Promise<Lead> => {
+  return customFetch<Lead>(getCreateLeadUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createLeadBody),
+  });
+};
+
+export const getCreateLeadMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createLead>>,
+    TError,
+    { data: BodyType<CreateLeadBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createLead>>,
+  TError,
+  { data: BodyType<CreateLeadBody> },
+  TContext
+> => {
+  const mutationKey = ["createLead"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createLead>>,
+    { data: BodyType<CreateLeadBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createLead(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateLeadMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createLead>>
+>;
+export type CreateLeadMutationBody = BodyType<CreateLeadBody>;
+export type CreateLeadMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Create a new lead (from Zapier or webhook)
+ */
+export const useCreateLead = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createLead>>,
+    TError,
+    { data: BodyType<CreateLeadBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createLead>>,
+  TError,
+  { data: BodyType<CreateLeadBody> },
+  TContext
+> => {
+  return useMutation(getCreateLeadMutationOptions(options));
+};
+
+/**
+ * @summary List all leads (admin only)
+ */
+export const getGetLeadsUrl = (params?: GetLeadsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/leads?${stringifiedParams}`
+    : `/api/leads`;
+};
+
+export const getLeads = async (
+  params?: GetLeadsParams,
+  options?: RequestInit,
+): Promise<LeadsListResponse> => {
+  return customFetch<LeadsListResponse>(getGetLeadsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetLeadsQueryKey = (params?: GetLeadsParams) => {
+  return [`/api/leads`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetLeadsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getLeads>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  params?: GetLeadsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getLeads>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetLeadsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getLeads>>> = ({
+    signal,
+  }) => getLeads(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getLeads>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetLeadsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getLeads>>
+>;
+export type GetLeadsQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary List all leads (admin only)
+ */
+
+export function useGetLeads<
+  TData = Awaited<ReturnType<typeof getLeads>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  params?: GetLeadsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getLeads>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetLeadsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get lead statistics (admin only)
+ */
+export const getGetLeadStatsUrl = () => {
+  return `/api/leads/stats`;
+};
+
+export const getLeadStats = async (
+  options?: RequestInit,
+): Promise<LeadStats> => {
+  return customFetch<LeadStats>(getGetLeadStatsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetLeadStatsQueryKey = () => {
+  return [`/api/leads/stats`] as const;
+};
+
+export const getGetLeadStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getLeadStats>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getLeadStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetLeadStatsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getLeadStats>>> = ({
+    signal,
+  }) => getLeadStats({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getLeadStats>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetLeadStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getLeadStats>>
+>;
+export type GetLeadStatsQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get lead statistics (admin only)
+ */
+
+export function useGetLeadStats<
+  TData = Awaited<ReturnType<typeof getLeadStats>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getLeadStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetLeadStatsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a lead status (admin only)
+ */
+export const getUpdateLeadStatusUrl = (id: number) => {
+  return `/api/leads/${id}/status`;
+};
+
+export const updateLeadStatus = async (
+  id: number,
+  updateLeadStatusBody: UpdateLeadStatusBody,
+  options?: RequestInit,
+): Promise<Lead> => {
+  return customFetch<Lead>(getUpdateLeadStatusUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateLeadStatusBody),
+  });
+};
+
+export const getUpdateLeadStatusMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateLeadStatus>>,
+    TError,
+    { id: number; data: BodyType<UpdateLeadStatusBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateLeadStatus>>,
+  TError,
+  { id: number; data: BodyType<UpdateLeadStatusBody> },
+  TContext
+> => {
+  const mutationKey = ["updateLeadStatus"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateLeadStatus>>,
+    { id: number; data: BodyType<UpdateLeadStatusBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateLeadStatus(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateLeadStatusMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateLeadStatus>>
+>;
+export type UpdateLeadStatusMutationBody = BodyType<UpdateLeadStatusBody>;
+export type UpdateLeadStatusMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Update a lead status (admin only)
+ */
+export const useUpdateLeadStatus = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateLeadStatus>>,
+    TError,
+    { id: number; data: BodyType<UpdateLeadStatusBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateLeadStatus>>,
+  TError,
+  { id: number; data: BodyType<UpdateLeadStatusBody> },
+  TContext
+> => {
+  return useMutation(getUpdateLeadStatusMutationOptions(options));
 };

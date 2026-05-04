@@ -14,6 +14,8 @@ tags:
     description: Authentication operations
   - name: users
     description: User management operations
+  - name: leads
+    description: Lead management operations
 paths:
   /healthz:
     get:
@@ -277,6 +279,123 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /leads:
+    post:
+      operationId: createLead
+      tags: [leads]
+      summary: Create a new lead (from Zapier or webhook)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLeadBody"
+      responses:
+        "201":
+          description: Lead created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Duplicate facebook_lead_id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      operationId: getLeads
+      tags: [leads]
+      summary: List all leads (admin only)
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by name, email, or phone
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [CREATED, QUALIFIED, CLOSED, REJECTED]
+          description: Filter by status
+      responses:
+        "200":
+          description: List of leads
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadsListResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /leads/stats:
+    get:
+      operationId: getLeadStats
+      tags: [leads]
+      summary: Get lead statistics (admin only)
+      responses:
+        "200":
+          description: Lead stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadStats"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /leads/{id}/status:
+    patch:
+      operationId: updateLeadStatus
+      tags: [leads]
+      summary: Update a lead status (admin only)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateLeadStatusBody"
+      responses:
+        "200":
+          description: Lead status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Lead not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -418,3 +537,108 @@ components:
           type: string
       required:
         - error
+
+    Lead:
+      type: object
+      properties:
+        id:
+          type: integer
+        facebookLeadId:
+          type: string
+          nullable: true
+        fullName:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+        campaignName:
+          type: string
+          nullable: true
+        adName:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [CREATED, QUALIFIED, CLOSED, REJECTED]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - fullName
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateLeadBody:
+      type: object
+      properties:
+        facebookLeadId:
+          type: string
+        fullName:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        source:
+          type: string
+        campaignName:
+          type: string
+        adName:
+          type: string
+      required:
+        - fullName
+
+    UpdateLeadStatusBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [CREATED, QUALIFIED, CLOSED, REJECTED]
+      required:
+        - status
+
+    LeadsListResponse:
+      type: object
+      properties:
+        leads:
+          type: array
+          items:
+            $ref: "#/components/schemas/Lead"
+        total:
+          type: integer
+      required:
+        - leads
+        - total
+
+    LeadStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        created:
+          type: integer
+        qualified:
+          type: integer
+        closed:
+          type: integer
+        rejected:
+          type: integer
+      required:
+        - total
+        - created
+        - qualified
+        - closed
+        - rejected
