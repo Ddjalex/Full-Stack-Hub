@@ -10,6 +10,7 @@ import Register from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
 import Admin from "@/pages/admin";
 import Unauthorized from "@/pages/unauthorized";
+import Settings from "@/pages/settings";
 import Layout from "@/components/layout";
 
 const queryClient = new QueryClient();
@@ -18,7 +19,7 @@ function ProtectedRoute({ component: Component, adminOnly = false }: { component
   const { user, isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
   }
 
   if (!isAuthenticated) {
@@ -41,7 +42,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/unauthorized" component={Unauthorized} />
-      
+
       <Route path="/dashboard">
         {() => (
           <Layout>
@@ -56,7 +57,14 @@ function Router() {
           </Layout>
         )}
       </Route>
-      
+      <Route path="/settings">
+        {() => (
+          <Layout>
+            <ProtectedRoute component={Settings} />
+          </Layout>
+        )}
+      </Route>
+
       <Route component={NotFound} />
     </Switch>
   );

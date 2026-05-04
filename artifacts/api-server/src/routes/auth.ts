@@ -89,4 +89,87 @@ router.get("/me", requireAuth, (req: AuthRequest, res) => {
   res.json(req.user);
 });
 
+router.patch("/profile", requireAuth, async (req: AuthRequest, res) => {
+  const { fullName, email, currentPassword, newPassword } = req.body as {
+    fullName?: string;
+    email?: string;
+    currentPassword?: string;
+    newPassword?: string;
+  };
+
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const [existing] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, req.user.id))
+    .limit(1);
+
+  if (!existing) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  const updates: Partial<{ fullName: string; email: string; passwordHash: string }> = {};
+
+  if (fullName && fullName.trim().length >= 2) {
+    updates.fullName = fullName.trim();
+  }
+
+  if (email) {
+    const normalizedEmail = email.toLowerCase();
+    if (normalizedEmail !== existing.email) {
+      const [taken] = await db
+        .select({ id: usersTable.id })
+        .from(usersTable)
+        .where(eq(usersTable.email, normalizedEmail))
+        .limit(1);
+      if (taken) {
+        res.status(409).json({ error: "That email is already in use by another account" });
+        return;
+      }
+      updates.email = normalizedEmail;
+    }
+  }
+
+  if (newPassword) {
+    if (!currentPassword) {
+      res.status(400).json({ error: "Current password is required to set a new password" });
+      return;
+    }
+    const valid = await bcrypt.compare(currentPassword, existing.passwordHash);
+    if (!valid) {
+      res.status(401).json({ error: "Current password is incorrect" });
+      return;
+    }
+    if (newPassword.length < 8) {
+      res.status(400).json({ error: "New password must be at least 8 characters" });
+      return;
+    }
+    updates.passwordHash = await bcrypt.hash(newPassword, 12);
+  }
+
+  if (Object.keys(updates).length === 0) {
+    res.status(400).json({ error: "No changes provided" });
+    return;
+  }
+
+  const [updated] = await db
+    .update(usersTable)
+    .set(updates)
+    .where(eq(usersTable.id, req.user.id))
+    .returning({
+      id: usersTable.id,
+      fullName: usersTable.fullName,
+      email: usersTable.email,
+      role: usersTable.role,
+      createdAt: usersTable.createdAt,
+    });
+
+  res.json(updated);
+});
+
 export default router;

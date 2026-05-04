@@ -66,6 +66,28 @@ export const GetMeResponse = zod.object({
 });
 
 /**
+ * @summary Update current user profile (email, name, password)
+ */
+export const updateProfileBodyFullNameMin = 2;
+
+export const updateProfileBodyNewPasswordMin = 8;
+
+export const UpdateProfileBody = zod.object({
+  fullName: zod.string().min(updateProfileBodyFullNameMin).optional(),
+  email: zod.string().email().optional(),
+  currentPassword: zod.string().optional(),
+  newPassword: zod.string().min(updateProfileBodyNewPasswordMin).optional(),
+});
+
+export const UpdateProfileResponse = zod.object({
+  id: zod.number(),
+  fullName: zod.string(),
+  email: zod.string(),
+  role: zod.enum(["user", "admin"]),
+  createdAt: zod.coerce.date(),
+});
+
+/**
  * @summary List all users (admin only)
  */
 export const ListUsersQueryParams = zod.object({

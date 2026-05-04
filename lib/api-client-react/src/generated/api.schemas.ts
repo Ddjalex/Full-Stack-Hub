@@ -55,6 +55,15 @@ export interface UpdateUserBody {
   fullName?: string;
 }
 
+export interface UpdateProfileBody {
+  /** @minLength 2 */
+  fullName?: string;
+  email?: string;
+  currentPassword?: string;
+  /** @minLength 8 */
+  newPassword?: string;
+}
+
 export interface UsersListResponse {
   users: User[];
   total: number;
