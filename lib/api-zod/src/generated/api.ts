@@ -14,3 +14,130 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary Register a new user
+ */
+export const registerBodyFullNameMin = 2;
+
+export const registerBodyPasswordMin = 8;
+
+export const RegisterBody = zod.object({
+  fullName: zod.string().min(registerBodyFullNameMin),
+  email: zod.string().email(),
+  password: zod.string().min(registerBodyPasswordMin),
+});
+
+/**
+ * @summary Login with email and password
+ */
+export const LoginBody = zod.object({
+  email: zod.string().email(),
+  password: zod.string(),
+});
+
+export const LoginResponse = zod.object({
+  user: zod.object({
+    id: zod.number(),
+    fullName: zod.string(),
+    email: zod.string(),
+    role: zod.enum(["user", "admin"]),
+    createdAt: zod.coerce.date(),
+  }),
+  token: zod.string(),
+});
+
+/**
+ * @summary Logout current user
+ */
+export const LogoutResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
+ * @summary Get current authenticated user
+ */
+export const GetMeResponse = zod.object({
+  id: zod.number(),
+  fullName: zod.string(),
+  email: zod.string(),
+  role: zod.enum(["user", "admin"]),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary List all users (admin only)
+ */
+export const ListUsersQueryParams = zod.object({
+  search: zod.coerce.string().optional().describe("Search by name or email"),
+  role: zod.enum(["user", "admin"]).optional().describe("Filter by role"),
+});
+
+export const ListUsersResponse = zod.object({
+  users: zod.array(
+    zod.object({
+      id: zod.number(),
+      fullName: zod.string(),
+      email: zod.string(),
+      role: zod.enum(["user", "admin"]),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+  total: zod.number(),
+});
+
+/**
+ * @summary Get user statistics (admin only)
+ */
+export const GetUserStatsResponse = zod.object({
+  total: zod.number(),
+  admins: zod.number(),
+  regularUsers: zod.number(),
+  newThisMonth: zod.number(),
+});
+
+/**
+ * @summary Get a user by ID (admin only)
+ */
+export const GetUserParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetUserResponse = zod.object({
+  id: zod.number(),
+  fullName: zod.string(),
+  email: zod.string(),
+  role: zod.enum(["user", "admin"]),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a user's role (admin only)
+ */
+export const UpdateUserParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateUserBody = zod.object({
+  role: zod.enum(["user", "admin"]).optional(),
+  fullName: zod.string().optional(),
+});
+
+export const UpdateUserResponse = zod.object({
+  id: zod.number(),
+  fullName: zod.string(),
+  email: zod.string(),
+  role: zod.enum(["user", "admin"]),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a user (admin only)
+ */
+export const DeleteUserParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteUserResponse = zod.object({
+  message: zod.string(),
+});

@@ -8,3 +8,87 @@
 export interface HealthStatus {
   status: string;
 }
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
+
+export const UserRole = {
+  user: "user",
+  admin: "admin",
+} as const;
+
+export interface User {
+  id: number;
+  fullName: string;
+  email: string;
+  role: UserRole;
+  createdAt: string;
+}
+
+export interface RegisterBody {
+  /** @minLength 2 */
+  fullName: string;
+  email: string;
+  /** @minLength 8 */
+  password: string;
+}
+
+export interface LoginBody {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+export type UpdateUserBodyRole =
+  (typeof UpdateUserBodyRole)[keyof typeof UpdateUserBodyRole];
+
+export const UpdateUserBodyRole = {
+  user: "user",
+  admin: "admin",
+} as const;
+
+export interface UpdateUserBody {
+  role?: UpdateUserBodyRole;
+  fullName?: string;
+}
+
+export interface UsersListResponse {
+  users: User[];
+  total: number;
+}
+
+export interface UserStats {
+  total: number;
+  admins: number;
+  regularUsers: number;
+  newThisMonth: number;
+}
+
+export interface MessageResponse {
+  message: string;
+}
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export type ListUsersParams = {
+  /**
+   * Search by name or email
+   */
+  search?: string;
+  /**
+   * Filter by role
+   */
+  role?: ListUsersRole;
+};
+
+export type ListUsersRole = (typeof ListUsersRole)[keyof typeof ListUsersRole];
+
+export const ListUsersRole = {
+  user: "user",
+  admin: "admin",
+} as const;
