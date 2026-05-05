@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { LogOut, LayoutDashboard, ShieldAlert, Settings, Users } from "lucide-react";
+import { useLeadNotifications } from "@/hooks/use-lead-notifications";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const [location, setLocation] = useLocation();
@@ -13,6 +14,8 @@ export default function Layout({ children }: { children: ReactNode }) {
   const logout = useLogout();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  useLeadNotifications(!!user);
 
   const handleLogout = () => {
     logout.mutate(undefined, {

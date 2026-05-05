@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { leadsTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { logger } from "../lib/logger";
+import { broadcastLeadEvent } from "../lib/ws";
 
 const router = Router();
 
@@ -132,6 +133,23 @@ router.post("/webhook", async (req: Request, res: Response): Promise<void> => {
         .returning();
 
       logger.info({ leadId: lead?.id, leadgenId }, "Lead created from Facebook webhook");
+
+      if (lead) {
+        broadcastLeadEvent({
+          type: "new_lead",
+          lead: {
+            id: lead.id,
+            fullName: lead.fullName,
+            email: lead.email ?? null,
+            phone: lead.phone ?? null,
+            status: lead.status,
+            source: lead.source ?? null,
+            createdAt: lead.createdAt instanceof Date
+              ? lead.createdAt.toISOString()
+              : String(lead.createdAt),
+          },
+        });
+      }
     }
   }
 });
