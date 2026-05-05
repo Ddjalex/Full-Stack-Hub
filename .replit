@@ -70,3 +70,9 @@ externalPort = 3000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+FACEBOOK_PAGE_ACCESS_TOKEN = "EAANIOhsiGqsBRUet4ZBSpRJUDZATjh1oAvxBr0ZBuCNsNApGMwAOydqSNuIL7PZB6JuItGwF7EDFKQ4QucSjWpXuhYxWuLfz0qpOZCUFdgh1HOJKNAfc3fHqw5yjB4pn7Fndl1cl1fxFEGnNWdfzCMfkTd0otKJlnp0jnNjhZBIDxJ9jmSfqKso5COEUyWTK1AVZB87CEpg6IbSbZBsxFOVK7vpJ"
+NEON_DATABASE_URL = "postgresql://neondb_owner:npg_8ZNG6QEkoSBa@ep-bold-leaf-ampscm1n-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
